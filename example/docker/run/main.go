@@ -18,7 +18,7 @@ func main() {
 			
 			npm i --verbose --registry https://registry.npmmirror.com
 			
-			./node_modules/.bin/tant-intl build --verbose && ./node_modules/.bin/nx run-many --target=build --projects=portal,ta,va --verbose`,
+			npm run build`,
 		},
 		// Volumes: map[string]string{
 		// 	"/tests/go-zoox/docker": "/tests",
