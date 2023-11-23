@@ -4,20 +4,16 @@ import (
 	"context"
 
 	"github.com/docker/docker/api/types"
-	"github.com/docker/docker/client"
 )
 
+type StartOptions = types.ContainerStartOptions
+
 // Start starts a container
-func Start(id string) error {
-	ctx := context.Background()
-	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
-	if err != nil {
-		return err
+func (c *container) Start(ctx context.Context, id string, opts ...func(opt *StartOptions)) error {
+	optsX := &StartOptions{}
+	for _, opt := range opts {
+		opt(optsX)
 	}
 
-	if err := cli.ContainerStart(ctx, id, types.ContainerStartOptions{}); err != nil {
-		return err
-	}
-
-	return nil
+	return c.client.ContainerStart(ctx, id, *optsX)
 }

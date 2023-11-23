@@ -4,20 +4,18 @@ import (
 	"context"
 
 	"github.com/docker/docker/api/types"
-	"github.com/docker/docker/client"
 )
 
-// Remove removes a container
-func Remove(id string) error {
-	ctx := context.Background()
-	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
-	if err != nil {
-		return err
+type RemoveOptions = types.ContainerRemoveOptions
+
+// Remove removes a container.
+func (c *container) Remove(ctx context.Context, id string, opts ...func(opt *RemoveOptions)) error {
+	opt := &RemoveOptions{
+		Force: true,
+	}
+	for _, o := range opts {
+		o(opt)
 	}
 
-	if err := cli.ContainerRemove(ctx, id, types.ContainerRemoveOptions{Force: true}); err != nil {
-		return err
-	}
-
-	return nil
+	return c.client.ContainerRemove(ctx, id, *opt)
 }

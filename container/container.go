@@ -1,50 +1,50 @@
 package container
 
-import "github.com/docker/docker/api/types"
+import (
+	"context"
+	"io"
+
+	"github.com/docker/docker/api/types"
+	co "github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/client"
+	"github.com/go-zoox/docker/entity"
+)
 
 // Container is the docker container client interface
 type Container interface {
-	Run(cfg *RunConfig) error
-	Logs(id string) ([]byte, error)
-	Start(id string) error
-	Stop(id string) error
-	Remove(id string) error
-	Inspect(id string) (*types.ContainerJSON, error)
-	Status(id string) (*types.ContainerState, error)
+	List(ctx context.Context, opts ...func(opt *ListOptions)) ([]entity.Container, error)
+	//
+	Create(ctx context.Context, opts ...func(opt *CreateOptions)) (co.CreateResponse, error)
+	Update(ctx context.Context, id string, opts ...func(opt *UpdateOptions)) (co.ContainerUpdateOKBody, error)
+	Remove(ctx context.Context, id string, opts ...func(opt *RemoveOptions)) error
+	//
+	Start(ctx context.Context, id string, opts ...func(opt *StartOptions)) error
+	Stop(ctx context.Context, id string, opts ...func(opt *StopOptions)) error
+	Restart(ctx context.Context, id string, opts ...func(opt *RestartOptions)) error
+	//
+	Inspect(ctx context.Context, id string, opts ...func(opt *InspectOptions)) (*types.ContainerJSON, error)
+	//
+	Stats(ctx context.Context, id string, opts ...func(opt *StatsOptions)) (*types.ContainerStats, error)
+	//
+	Logs(ctx context.Context, id string, opts ...func(opt *LogsConfig)) (io.ReadCloser, error)
+	//
+	Exec(ctx context.Context, id string, opts ...func(opt *ExecOptions)) error
+	//
+	Run(ctx context.Context, opts ...func(opt *RunOptions)) error
 }
 
 type container struct {
+	client *client.Client
 }
 
 // New creates a docker container client
-func New() Container {
-	return &container{}
+func New(client *client.Client) Container {
+	return &container{
+		client: client,
+	}
 }
 
-func (c *container) Run(cfg *RunConfig) error {
-	return Run(cfg)
-}
-
-func (c *container) Logs(id string) ([]byte, error) {
-	return Logs(id)
-}
-
-func (c *container) Start(id string) error {
-	return Start(id)
-}
-
-func (c *container) Stop(id string) error {
-	return Stop(id)
-}
-
-func (c *container) Remove(id string) error {
-	return Remove(id)
-}
-
-func (c *container) Inspect(id string) (*types.ContainerJSON, error) {
-	return Inspect(id)
-}
-
-func (c *container) Status(id string) (*types.ContainerState, error) {
-	return Status(id)
-}
+// cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+// if err != nil {
+// 	return err
+// }

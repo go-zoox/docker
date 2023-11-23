@@ -6,31 +6,37 @@ import (
 	"encoding/json"
 	"io"
 	"os"
-	"time"
 
+	"github.com/docker/cli/cli/streams"
 	"github.com/docker/docker/api/types"
-	"github.com/docker/docker/client"
+	"github.com/docker/docker/pkg/jsonmessage"
 )
 
-// PullConfig is the configuration for pulling an image
-type PullConfig struct {
-	Name string
+// PullOption is the options for pulling an image
+type PullOption struct {
 	Auth struct {
 		Username string
 		Password string
 	}
+	Platform string
+	//
+	Stdout io.Writer
 }
 
 // Pull pulls an image
-func Pull(cfg *PullConfig) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Hour)
-	defer cancel()
+func (i *image) Pull(ctx context.Context, name string, opts ...func(opt *PullOption)) error {
+	opt := &PullOption{
+		Stdout: os.Stdout,
+	}
+	for _, o := range opts {
+		o(opt)
+	}
 
 	auth := ""
-	if cfg.Auth.Username != "" && cfg.Auth.Password != "" {
+	if opt.Auth.Username != "" && opt.Auth.Password != "" {
 		authConfig := types.AuthConfig{
-			Username: cfg.Auth.Username,
-			Password: cfg.Auth.Password,
+			Username: opt.Auth.Username,
+			Password: opt.Auth.Password,
 		}
 		encodedJSON, err := json.Marshal(authConfig)
 		if err != nil {
@@ -39,18 +45,18 @@ func Pull(cfg *PullConfig) error {
 		auth = base64.URLEncoding.EncodeToString(encodedJSON)
 	}
 
-	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
-	if err != nil {
-		return err
-	}
-
-	reader, err := cli.ImagePull(ctx, cfg.Name, types.ImagePullOptions{
+	reader, err := i.client.ImagePull(ctx, name, types.ImagePullOptions{
 		RegistryAuth: auth,
+		Platform:     opt.Platform,
 	})
 	if err != nil {
 		return err
 	}
-	io.Copy(os.Stdout, reader)
+	defer reader.Close()
+
+	if err := jsonmessage.DisplayJSONMessagesToStream(reader, streams.NewOut(opt.Stdout), nil); err != nil {
+		return err
+	}
 
 	return nil
 }

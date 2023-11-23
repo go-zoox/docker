@@ -2,251 +2,129 @@ package container
 
 import (
 	"context"
-	"encoding/base64"
-	"encoding/json"
-	"fmt"
 	"io"
 	"os"
-	"strings"
 
-	"github.com/go-zoox/docker/image"
+	"github.com/go-zoox/core-utils/fmt"
 
 	"github.com/docker/docker/api/types"
+	co "github.com/docker/docker/api/types/container"
 	dContainer "github.com/docker/docker/api/types/container"
-	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/api/types/network"
-	"github.com/docker/docker/client"
-	"github.com/docker/docker/pkg/stdcopy"
-	"github.com/go-zoox/fs"
-	v1 "github.com/opencontainers/image-spec/specs-go/v1"
-
-	"github.com/go-zoox/crypto/md5"
+	specs "github.com/opencontainers/image-spec/specs-go/v1"
 )
 
-// RunConfig is the configuration for running a container
-type RunConfig struct {
-	Name       string
-	Image      string
-	Commands   []string
-	Volumes    map[string]string
-	WorkingDir struct {
-		Host      string
-		Container string
-	}
+// RunOptions is the configuration for running a container
+type RunOptions struct {
+	Name string
 	//
-	Env map[string]string
+	Container *co.Config
+	Host      *co.HostConfig
+	Network   *network.NetworkingConfig
+	Platform  *specs.Platform
 	//
-	Auth struct {
-		Username string
-		Password string
-	}
+	Detached bool
 	//
-	Stdout io.Writer
-	Stderr io.Writer
-	//
-	// Limit
-	User   string
-	Memory int64 // Memory limit (in bytes)
-	CPU    int64 // CPU cores count
-
-	// Dockerfile Content, not a file path or name
-	Dockerfile string
-
-	//
-	AutoRemove bool
+	Stdin  io.Reader
+	Stdout io.WriteCloser
+	Stderr io.WriteCloser
 }
 
 // Run runs a container
-func Run(cfg *RunConfig) error {
-	HostDir := cfg.WorkingDir.Host
-	ContainerDir := cfg.WorkingDir.Container
-	var cmd []string = nil
+func (c *container) Run(ctx context.Context, opts ...func(opt *RunOptions)) error {
+	optsX := &RunOptions{
+		Container: &co.Config{
+			Tty:          true,
+			OpenStdin:    true,
+			AttachStdin:  true,
+			AttachStdout: true,
+			AttachStderr: true,
+			StdinOnce:    true,
+		},
+		Host:     &co.HostConfig{},
+		Network:  &network.NetworkingConfig{},
+		Platform: &specs.Platform{},
+		//
+		Stdin:  os.Stdin,
+		Stdout: os.Stdout,
+		Stderr: os.Stderr,
+	}
+	for _, opt := range opts {
+		opt(optsX)
+	}
 
-	// create tmp dir
-	if err := fs.Mkdirp(HostDir); err != nil {
+	if optsX.Detached {
+		// optsX.Container.Tty = false
+		// optsX.Container.OpenStdin = false
+		optsX.Container.AttachStdin = false
+		optsX.Container.AttachStdout = false
+		optsX.Container.AttachStderr = false
+		optsX.Container.StdinOnce = false
+	}
+
+	resp, err := c.Create(ctx, func(opt *CreateOptions) {
+		opt.Name = optsX.Name
+		opt.Container = optsX.Container
+		opt.Host = optsX.Host
+		opt.Network = optsX.Network
+		opt.Platform = optsX.Platform
+	})
+	if err != nil {
 		return err
 	}
-	// // create log file
-	// logf, err := os.Create(logPath)
-	// if err != nil {
-	// 	return err
-	// }
+	containerID := resp.ID
 
-	if cfg.Commands != nil {
-		scriptHostPath := fs.JoinPath(HostDir, "runner.sh")
-		scriptContainerPath := fs.JoinPath(ContainerDir, "runner.sh")
-
-		// generates script by commands
-		f, err := os.Create(scriptHostPath)
-		if err != nil {
-			return err
-		}
-		f.WriteString("#!/bin/sh\n")
-		for _, cmd := range cfg.Commands {
-			f.WriteString(cmd + "\n")
-		}
-		f.Close()
-
-		cmd = []string{"sh", scriptContainerPath}
-	}
-
-	// logPath := fs.JoinPath(runtimeDir, "runner.log")
-
-	//
-	stdout := cfg.Stdout
-	if stdout == nil {
-		stdout = os.Stdout
-	}
-	stderr := cfg.Stderr
-	if stderr == nil {
-		stderr = os.Stderr
-	}
-
-	auth := ""
-	if cfg.Auth.Username != "" && cfg.Auth.Password != "" {
-		authConfig := types.AuthConfig{
-			Username: cfg.Auth.Username,
-			Password: cfg.Auth.Password,
-		}
-		encodedJSON, err := json.Marshal(authConfig)
-		if err != nil {
-			return err
-		}
-		auth = base64.URLEncoding.EncodeToString(encodedJSON)
-	}
-
-	env := []string{}
-	for k, v := range cfg.Env {
-		env = append(env, k+"="+v)
-	}
-
-	if cfg.Dockerfile != "" {
-		dockerfilePath := fs.JoinPath(HostDir, "Dockerfile")
-		// generates script by commands
-		f, err := os.Create(dockerfilePath)
-		if err != nil {
-			return err
-		}
-		f.WriteString(cfg.Dockerfile)
-
-		hash := md5.Md5(cfg.Dockerfile)
-		imageName := strings.ToLower("GO_ZOOX_DOCKER_BUILD_" + hash + ":latest")
-
-		err = image.Build(&image.BuildConfig{
-			Name:    imageName,
-			Context: HostDir,
-			// Tags:    []string{"latest"},
+	if !optsX.Detached {
+		stream, err := c.client.ContainerAttach(ctx, containerID, types.ContainerAttachOptions{
+			Stream: true,
+			Stdin:  true,
+			Stdout: true,
+			Stderr: true,
 		})
 		if err != nil {
 			return err
 		}
+		go io.Copy(stream.Conn, optsX.Stdin)
+		go io.Copy(optsX.Stdout, stream.Reader)
 
-		cfg.Image = imageName
+		// go func() {
+		// 	for {
+		// 		buf := make([]byte, 1024)
+		// 		if n, err := stream.Reader.Read(buf); err != nil {
+		// 			fmt.Println(err)
+		// 		} else {
+		// 			buf = buf[:n]
+
+		// 			fmt.Println(buf)
+
+		// 			// if buf[n-2] == '\r' && buf[n-1] == '\n' {
+		// 			// 	continue
+		// 			// }
+
+		// 			// // handle ANI Ecape equence for cursor position => 27 91 54 110
+		// 			// if buf[n-4] == 27 && buf[n-3] == 91 && buf[n-2] == 54 && buf[n-1] == 110 {
+		// 			// 	buf = buf[:n-4]
+		// 			// }
+
+		// 			optsX.Stdout.Write(buf)
+		// 		}
+		// 	}
+		// }()
 	}
 
-	mounts := []mount.Mount{
-		{
-			Type:   mount.TypeBind,
-			Source: HostDir,
-			Target: ContainerDir,
-		},
-	}
-	for k, v := range cfg.Volumes {
-		mounts = append(mounts, mount.Mount{
-			Type:   mount.TypeBind,
-			Source: k,
-			Target: v,
-		})
-	}
-
-	ctx := context.Background()
-	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
-	if err != nil {
+	if err := c.Start(ctx, resp.ID); err != nil {
 		return err
 	}
 
-	resp, err := cli.ContainerCreate(
-		ctx,
-		&dContainer.Config{
-			Image:      cfg.Image,
-			Cmd:        cmd,
-			Env:        env,
-			WorkingDir: cfg.WorkingDir.Container,
-			User:       cfg.User,
-		},
-		&dContainer.HostConfig{
-			Mounts: mounts,
-			Resources: dContainer.Resources{
-				Memory:   cfg.Memory,
-				NanoCPUs: cfg.CPU,
-			},
-		},
-		&network.NetworkingConfig{},
-		&v1.Platform{},
-		cfg.Name,
-	)
-	if err != nil {
-		if client.IsErrNotFound(err) {
-			reader, err := cli.ImagePull(ctx, cfg.Image, types.ImagePullOptions{
-				RegistryAuth: auth,
-			})
-			if err != nil {
-				return err
+	if !optsX.Detached {
+		statusCh, errCh := c.client.ContainerWait(ctx, resp.ID, dContainer.WaitConditionNotRunning)
+		select {
+		case err := <-errCh:
+			return err
+		case status := <-statusCh:
+			if status.StatusCode != 0 {
+				return fmt.Errorf("container exited with non-zero status: %d", status.StatusCode)
 			}
-			io.Copy(stdout, reader)
-
-			//
-			resp, _ = cli.ContainerCreate(
-				ctx,
-				&dContainer.Config{
-					Image:      cfg.Image,
-					Cmd:        cmd,
-					Env:        env,
-					WorkingDir: cfg.WorkingDir.Container,
-				},
-				&dContainer.HostConfig{
-					Mounts: mounts,
-				},
-				&network.NetworkingConfig{},
-				&v1.Platform{},
-				cfg.Name,
-			)
-		} else {
-			return err
-		}
-	}
-
-	if err := cli.ContainerStart(ctx, resp.ID, types.ContainerStartOptions{}); err != nil {
-		return err
-	}
-
-	go func(ctx context.Context, cli *client.Client, containerID string) {
-		out, err := cli.ContainerLogs(ctx, containerID, types.ContainerLogsOptions{
-			ShowStderr: true,
-			ShowStdout: true,
-			Follow:     true,
-		})
-		if err != nil {
-			return
-		}
-
-		// StdCopy is a modified version of io.Copy.
-		stdcopy.StdCopy(stdout, stderr, out)
-	}(ctx, cli, resp.ID)
-
-	statusCh, errCh := cli.ContainerWait(ctx, resp.ID, dContainer.WaitConditionNotRunning)
-	select {
-	case err := <-errCh:
-		return err
-	case status := <-statusCh:
-		if status.StatusCode != 0 {
-			return fmt.Errorf("container exited with code %d", status.StatusCode)
-		}
-	}
-
-	if cfg.AutoRemove {
-		if err := cli.ContainerRemove(ctx, resp.ID, types.ContainerRemoveOptions{}); err != nil {
-			return err
 		}
 	}
 
