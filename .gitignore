@@ -32,3 +32,5 @@ lighthouse
 data/
 
 bin/
+
+./docker

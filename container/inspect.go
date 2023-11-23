@@ -3,19 +3,20 @@ package container
 import (
 	"context"
 
-	"github.com/docker/docker/api/types"
-	"github.com/docker/docker/client"
+	"github.com/go-zoox/docker/entity"
 )
 
-// Inspect inspects a container
-func Inspect(id string) (*types.ContainerJSON, error) {
-	ctx := context.Background()
-	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
-	if err != nil {
-		return nil, err
+type InspectOptions struct {
+}
+
+// Inspect inspects a container.
+func (c *container) Inspect(ctx context.Context, id string, opts ...func(opt *InspectOptions)) (*entity.ContainerState, error) {
+	opt := &InspectOptions{}
+	for _, o := range opts {
+		o(opt)
 	}
 
-	info, err := cli.ContainerInspect(ctx, id)
+	info, err := c.client.ContainerInspect(ctx, id)
 	if err != nil {
 		return nil, err
 	}

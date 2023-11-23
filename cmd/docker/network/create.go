@@ -1,0 +1,91 @@
+package network
+
+import (
+	"strings"
+
+	cn "github.com/docker/docker/api/types/network"
+	"github.com/go-zoox/cli"
+	"github.com/go-zoox/core-utils/fmt"
+	"github.com/go-zoox/docker"
+	"github.com/go-zoox/docker/network"
+)
+
+func Create() *cli.Command {
+	return &cli.Command{
+		Name:  "create",
+		Usage: "Create a network",
+		Flags: []cli.Flag{
+			&cli.StringFlag{
+				Name:    "driver",
+				Usage:   "Driver to manage the Network",
+				Aliases: []string{"d"},
+				Value:   "bridge",
+			},
+			&cli.StringFlag{
+				Name:  "scope",
+				Usage: "Control the network's scope",
+			},
+			&cli.StringFlag{
+				Name:  "gateway",
+				Usage: "IPv4 or IPv6 Gateway for the master subnet",
+			},
+			&cli.StringFlag{
+				Name:  "subnet",
+				Usage: "Subnet in CIDR format that represents a network segment",
+			},
+			&cli.StringFlag{
+				Name:  "label",
+				Usage: "Set metadata on a network",
+			},
+		},
+		Action: func(ctx *cli.Context) error {
+			name := ctx.Args().First()
+			if name == "" {
+				return fmt.Errorf("network name is required")
+			}
+
+			client, err := docker.New()
+			if err != nil {
+				return err
+			}
+
+			response, err := client.Network().Create(ctx.Context, name, func(opt *network.CreateOption) {
+				opt.Driver = ctx.String("driver")
+				opt.Scope = ctx.String("scope")
+				if ctx.String("gateway") != "" || ctx.String("subnet") != "" {
+					opt.IPAM = &cn.IPAM{
+						Config: []cn.IPAMConfig{
+							{
+								Subnet:  ctx.String("subnet"),
+								Gateway: ctx.String("gateway"),
+							},
+						},
+					}
+				}
+
+				opt.Labels = map[string]string{}
+				for _, label := range ctx.StringSlice("label") {
+					key, value := splitKeyValue(label)
+					opt.Labels[key] = value
+				}
+			})
+			if err != nil {
+				return err
+			}
+
+			fmt.Println(response.ID)
+			return nil
+		},
+	}
+}
+
+func splitKeyValue(label string) (key, value string) {
+	kv := strings.SplitN(label, "=", 2)
+	if len(kv) == 2 {
+		key = kv[0]
+		value = kv[1]
+	} else {
+		key = kv[0]
+	}
+	return
+}

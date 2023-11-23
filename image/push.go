@@ -12,8 +12,8 @@ import (
 	"github.com/docker/docker/client"
 )
 
-// PushConfig is the configuration for pushing an image
-type PushConfig struct {
+// PushOption is the configuration for pushing an image
+type PushOption struct {
 	Name string
 	Auth struct {
 		Username string
@@ -23,7 +23,7 @@ type PushConfig struct {
 }
 
 // Push pushes an image
-func Push(cfg *PushConfig) error {
+func Push(cfg *PushOption) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Hour)
 	defer cancel()
 

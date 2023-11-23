@@ -1,28 +1,34 @@
 package image
 
+import (
+	"context"
+
+	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/client"
+	"github.com/go-zoox/docker/entity"
+)
+
 // Image is the docker image client interface
 type Image interface {
-	Build(cfg *BuildConfig) error
-	Pull(cfg *PullConfig) error
-	Push(cfg *PushConfig) error
+	List(ctx context.Context, opts ...func(opt *ListOption)) (images []entity.Image, err error)
+	Inspect(ctx context.Context, id string, opts ...func(opt *InspectOption)) (*types.ImageInspect, error)
+	Remove(ctx context.Context, id string, opts ...func(opt *RemoveOption)) ([]types.ImageDeleteResponseItem, error)
+	//
+	Build(ctx context.Context, src string, opts ...func(opt *BuildOption)) error
+	Pull(ctx context.Context, name string, opts ...func(opt *PullOption)) error
+	// Push(ctx context.Context, opts ...func(opt *PushOption)) error
+	Tag(ctx context.Context, source, target string) error
+	//
+	Prune(ctx context.Context, opts ...func(opt *PruneOption)) (types.ImagesPruneReport, error)
 }
 
 type image struct {
+	client *client.Client
 }
 
 // New creates a docker image client
-func New() Image {
-	return &image{}
-}
-
-func (i *image) Build(cfg *BuildConfig) error {
-	return Build(cfg)
-}
-
-func (i *image) Pull(cfg *PullConfig) error {
-	return Pull(cfg)
-}
-
-func (i *image) Push(cfg *PushConfig) error {
-	return Push(cfg)
+func New(client *client.Client) Image {
+	return &image{
+		client: client,
+	}
 }
