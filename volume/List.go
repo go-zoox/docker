@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/docker/docker/api/types/filters"
+	dv "github.com/docker/docker/api/types/volume"
 	"github.com/go-zoox/docker/entity"
 )
 
@@ -17,7 +18,9 @@ func (n *volume) List(ctx context.Context, opts ...func(*ListOption)) ([]entity.
 		o(opt)
 	}
 
-	respone, err := n.client.VolumeList(ctx, opt.Filters)
+	respone, err := n.client.VolumeList(ctx, dv.ListOptions{
+		Filters: opt.Filters,
+	})
 	if err != nil {
 		return nil, err
 	}

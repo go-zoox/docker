@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/InVisionApp/tabular v0.3.0
 	github.com/docker/cli v24.0.7+incompatible
-	github.com/docker/docker v23.0.1+incompatible
+	github.com/docker/docker v24.0.7+incompatible
 	github.com/docker/go-connections v0.4.0
 	github.com/docker/go-units v0.5.0
 	github.com/go-zoox/cli v1.3.6
