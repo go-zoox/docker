@@ -25,19 +25,21 @@ type Options struct {
 }
 
 // New creates a docker client.
-func New(opts ...func(opt *Options)) (Docker, error) {
+func New(opts ...func(opt *Options)) (d Docker, err error) {
 	opt := &Options{}
 	for _, o := range opts {
 		o(opt)
 	}
 
-	c, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
-	if err != nil {
-		return nil, err
+	if opt.Client == nil {
+		opt.Client, err = client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return &docker{
-		client: c,
+		client: opt.Client,
 	}, nil
 }
 
