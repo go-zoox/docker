@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/registry"
 	"github.com/docker/docker/client"
 )
 
@@ -29,7 +30,7 @@ func Push(cfg *PushOption) error {
 
 	auth := ""
 	if cfg.Auth.Username != "" && cfg.Auth.Password != "" {
-		authConfig := types.AuthConfig{
+		authConfig := registry.AuthConfig{
 			Username:      cfg.Auth.Username,
 			Password:      cfg.Auth.Password,
 			ServerAddress: cfg.Auth.Server,
