@@ -9,6 +9,7 @@ import (
 
 	"github.com/docker/cli/cli/streams"
 	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/registry"
 	"github.com/docker/docker/pkg/jsonmessage"
 )
 
@@ -34,7 +35,7 @@ func (i *image) Pull(ctx context.Context, name string, opts ...func(opt *PullOpt
 
 	auth := ""
 	if opt.Auth.Username != "" && opt.Auth.Password != "" {
-		authConfig := types.AuthConfig{
+		authConfig := registry.AuthConfig{
 			Username: opt.Auth.Username,
 			Password: opt.Auth.Password,
 		}

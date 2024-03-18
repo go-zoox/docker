@@ -265,7 +265,7 @@ func Run() *cli.Command {
 
 				// host
 				opt.Host.RestartPolicy = co.RestartPolicy{
-					Name:              ctx.String("restart"),
+					Name:              co.RestartPolicyMode(ctx.String("restart")),
 					MaximumRetryCount: ctx.Int("restart-max-attempts"),
 				}
 				opt.Host.Privileged = ctx.Bool("privileged")
