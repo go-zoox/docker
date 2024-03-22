@@ -20,6 +20,7 @@ type docker struct {
 	client *client.Client
 }
 
+// Options ...
 type Options struct {
 	Client *client.Client
 }

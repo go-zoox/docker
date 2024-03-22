@@ -7,9 +7,8 @@ import (
 
 	"github.com/go-zoox/core-utils/fmt"
 
-	"github.com/docker/docker/api/types"
 	co "github.com/docker/docker/api/types/container"
-	dContainer "github.com/docker/docker/api/types/container"
+	tc "github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/network"
 	specs "github.com/opencontainers/image-spec/specs-go/v1"
 )
@@ -75,7 +74,7 @@ func (c *container) Run(ctx context.Context, opts ...func(opt *RunOptions)) erro
 	containerID := resp.ID
 
 	if !optsX.Detached {
-		stream, err := c.client.ContainerAttach(ctx, containerID, types.ContainerAttachOptions{
+		stream, err := c.client.ContainerAttach(ctx, containerID, tc.AttachOptions{
 			Stream: true,
 			Stdin:  true,
 			Stdout: true,
@@ -117,7 +116,7 @@ func (c *container) Run(ctx context.Context, opts ...func(opt *RunOptions)) erro
 	}
 
 	if !optsX.Detached {
-		statusCh, errCh := c.client.ContainerWait(ctx, resp.ID, dContainer.WaitConditionNotRunning)
+		statusCh, errCh := c.client.ContainerWait(ctx, resp.ID, tc.WaitConditionNotRunning)
 		select {
 		case err := <-errCh:
 			return err

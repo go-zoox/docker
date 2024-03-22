@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/docker/docker/api/types"
+	ti "github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/client"
 	"github.com/go-zoox/docker/entity"
 )
@@ -12,7 +13,7 @@ import (
 type Image interface {
 	List(ctx context.Context, opts ...func(opt *ListOption)) (images []entity.Image, err error)
 	Inspect(ctx context.Context, id string, opts ...func(opt *InspectOption)) (*types.ImageInspect, error)
-	Remove(ctx context.Context, id string, opts ...func(opt *RemoveOption)) ([]types.ImageDeleteResponseItem, error)
+	Remove(ctx context.Context, id string, opts ...func(opt *RemoveOption)) ([]ti.DeleteResponse, error)
 	//
 	Build(ctx context.Context, src string, opts ...func(opt *BuildOption)) error
 	Pull(ctx context.Context, name string, opts ...func(opt *PullOption)) error

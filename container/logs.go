@@ -4,7 +4,7 @@ import (
 	"context"
 	"io"
 
-	"github.com/docker/docker/api/types"
+	tc "github.com/docker/docker/api/types/container"
 )
 
 type LogsConfig struct {
@@ -23,7 +23,7 @@ func (c *container) Logs(ctx context.Context, id string, opts ...func(opt *LogsC
 		o(opt)
 	}
 
-	return c.client.ContainerLogs(ctx, id, types.ContainerLogsOptions{
+	return c.client.ContainerLogs(ctx, id, tc.LogsOptions{
 		ShowStdout: true,
 		ShowStderr: true,
 		Follow:     opt.Follow,

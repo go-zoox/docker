@@ -3,10 +3,10 @@ package container
 import (
 	"context"
 
-	"github.com/docker/docker/api/types"
+	tc "github.com/docker/docker/api/types/container"
 )
 
-type StartOptions = types.ContainerStartOptions
+type StartOptions = tc.StartOptions
 
 // Start starts a container
 func (c *container) Start(ctx context.Context, id string, opts ...func(opt *StartOptions)) error {

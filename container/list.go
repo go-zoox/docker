@@ -3,11 +3,11 @@ package container
 import (
 	"context"
 
-	"github.com/docker/docker/api/types"
+	tc "github.com/docker/docker/api/types/container"
 	"github.com/go-zoox/docker/entity"
 )
 
-type ListOptions = types.ContainerListOptions
+type ListOptions = tc.ListOptions
 
 func (c *container) List(ctx context.Context, opts ...func(opt *ListOptions)) ([]entity.Container, error) {
 	opt := &ListOptions{}
