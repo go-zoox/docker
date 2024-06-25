@@ -8,7 +8,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/docker/docker/api/types"
+	dimage "github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/api/types/registry"
 	"github.com/docker/docker/client"
 )
@@ -47,7 +47,7 @@ func Push(cfg *PushOption) error {
 		return err
 	}
 
-	reader, err := cli.ImagePush(ctx, cfg.Name, types.ImagePushOptions{
+	reader, err := cli.ImagePush(ctx, cfg.Name, dimage.PushOptions{
 		RegistryAuth: auth,
 	})
 	if err != nil {

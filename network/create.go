@@ -3,15 +3,13 @@ package network
 import (
 	"context"
 
-	"github.com/docker/docker/api/types"
+	dnetwork "github.com/docker/docker/api/types/network"
 )
 
-type CreateOption = types.NetworkCreate
+type CreateOption = dnetwork.CreateOptions
 
-func (n *network) Create(ctx context.Context, name string, opts ...func(*CreateOption)) (types.NetworkCreateResponse, error) {
-	opt := &CreateOption{
-		CheckDuplicate: true,
-	}
+func (n *network) Create(ctx context.Context, name string, opts ...func(*CreateOption)) (dnetwork.CreateResponse, error) {
+	opt := &CreateOption{}
 	for _, o := range opts {
 		o(opt)
 	}

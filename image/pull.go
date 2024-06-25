@@ -8,7 +8,7 @@ import (
 	"os"
 
 	"github.com/docker/cli/cli/streams"
-	"github.com/docker/docker/api/types"
+	dimage "github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/api/types/registry"
 	"github.com/docker/docker/pkg/jsonmessage"
 )
@@ -46,7 +46,7 @@ func (i *image) Pull(ctx context.Context, name string, opts ...func(opt *PullOpt
 		auth = base64.URLEncoding.EncodeToString(encodedJSON)
 	}
 
-	reader, err := i.client.ImagePull(ctx, name, types.ImagePullOptions{
+	reader, err := i.client.ImagePull(ctx, name, dimage.PullOptions{
 		RegistryAuth: auth,
 		Platform:     opt.Platform,
 	})

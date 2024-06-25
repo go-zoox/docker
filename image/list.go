@@ -5,8 +5,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
+	dimage "github.com/docker/docker/api/types/image"
 	"github.com/go-zoox/docker/entity"
 )
 
@@ -31,7 +31,7 @@ func (i *image) List(ctx context.Context, opts ...func(opt *ListOption)) (images
 		o(opt)
 	}
 
-	imagesX, err := i.client.ImageList(ctx, types.ImageListOptions{})
+	imagesX, err := i.client.ImageList(ctx, dimage.ListOptions{})
 	if err != nil {
 		return nil, err
 	}
