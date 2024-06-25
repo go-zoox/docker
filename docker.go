@@ -20,27 +20,37 @@ type docker struct {
 	client *client.Client
 }
 
-// Options ...
-type Options struct {
-	Client *client.Client
+// Config ...
+type Config struct {
+	// Docker Host
+	Server string `json:"server"`
 }
 
+// Option ...
+type Option func(cfg *Config)
+
 // New creates a docker client.
-func New(opts ...func(opt *Options)) (d Docker, err error) {
-	opt := &Options{}
+func New(opts ...Option) (d Docker, err error) {
+	cfg := &Config{}
 	for _, o := range opts {
-		o(opt)
+		o(cfg)
 	}
 
-	if opt.Client == nil {
-		opt.Client, err = client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	var c *client.Client
+	if cfg.Server == "" {
+		c, err = client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		c, err = client.NewClientWithOpts(client.WithHost(cfg.Server), client.WithAPIVersionNegotiation())
 		if err != nil {
 			return nil, err
 		}
 	}
 
 	return &docker{
-		client: opt.Client,
+		client: c,
 	}, nil
 }
 

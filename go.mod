@@ -1,6 +1,6 @@
 module github.com/go-zoox/docker
 
-go 1.18
+go 1.22.1
 
 require (
 	github.com/InVisionApp/tabular v0.3.0
