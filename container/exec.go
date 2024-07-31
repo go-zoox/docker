@@ -3,7 +3,6 @@ package container
 import (
 	"context"
 	"io"
-	"os"
 
 	"github.com/docker/docker/api/types"
 )
@@ -13,18 +12,18 @@ type ExecOptions struct {
 	Detach bool
 	Tty    bool
 	Cmd    []string
-	//
-	Stdin  io.Reader
-	Stdout io.WriteCloser
-	Stderr io.WriteCloser
+	// //
+	// Stdin  io.Reader
+	// Stdout io.WriteCloser
+	// Stderr io.WriteCloser
 }
 
 // Exec executes a command inside a container.
-func (c *container) Exec(ctx context.Context, id string, opts ...func(opt *ExecOptions)) error {
+func (c *container) Exec(ctx context.Context, id string, opts ...func(opt *ExecOptions)) (io.ReadWriteCloser, error) {
 	opt := &ExecOptions{
-		Stdin:  os.Stdin,
-		Stdout: os.Stdout,
-		Stderr: os.Stderr,
+		// Stdin:  os.Stdin,
+		// Stdout: os.Stdout,
+		// Stderr: os.Stderr,
 	}
 	for _, o := range opts {
 		o(opt)
@@ -39,7 +38,7 @@ func (c *container) Exec(ctx context.Context, id string, opts ...func(opt *ExecO
 		// ConsoleSize:  &[2]uint{300, 600},
 	})
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	stream, err := c.client.ContainerExecAttach(ctx, response.ID, types.ExecStartCheck{
@@ -48,15 +47,37 @@ func (c *container) Exec(ctx context.Context, id string, opts ...func(opt *ExecO
 		// ConsoleSize: &[2]uint{300, 600},
 	})
 	if err != nil {
-		return err
-	}
-	defer stream.Close()
-
-	if opt.Stdin != nil {
-		go io.Copy(stream.Conn, os.Stdin)
+		return nil, err
 	}
 
-	io.Copy(os.Stdout, stream.Reader)
+	// defer stream.Close()
 
+	// if opt.Stdin != nil {
+	// 	go io.Copy(stream.Conn, os.Stdin)
+	// }
+
+	// if _, err := io.Copy(opt.Stdout, stream.Reader); err != nil {
+	// 	return err
+	// }
+
+	// return nil
+
+	return &ExecStream{stream}, nil
+}
+
+type ExecStream struct {
+	types.HijackedResponse
+}
+
+func (s *ExecStream) Close() error {
+	s.HijackedResponse.Close()
 	return nil
+}
+
+func (s *ExecStream) Read(p []byte) (n int, err error) {
+	return s.Reader.Read(p)
+}
+
+func (s *ExecStream) Write(p []byte) (n int, err error) {
+	return s.Conn.Write(p)
 }

@@ -28,7 +28,7 @@ type Container interface {
 	//
 	Logs(ctx context.Context, id string, opts ...func(opt *LogsConfig)) (io.ReadCloser, error)
 	//
-	Exec(ctx context.Context, id string, opts ...func(opt *ExecOptions)) error
+	Exec(ctx context.Context, id string, opts ...func(opt *ExecOptions)) (io.ReadWriteCloser, error)
 	//
 	Run(ctx context.Context, opts ...func(opt *RunOptions)) error
 }
