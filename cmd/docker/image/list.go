@@ -29,7 +29,7 @@ func List() *cli.Command {
 				return err
 			}
 
-			images, err := client.Image().List(ctx.Context, func(opt *image.ListOption) {
+			images, err := client.Image().List(ctx.Context, func(opt *image.ListConfig) {
 				opt.All = ctx.Bool("all")
 			})
 			if err != nil {

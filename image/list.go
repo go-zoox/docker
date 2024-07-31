@@ -10,7 +10,7 @@ import (
 	"github.com/go-zoox/docker/entity"
 )
 
-type ListOption struct {
+type ListConfig struct {
 	// All controls whether all images in the graph are filtered, or just
 	// the heads.
 	All bool
@@ -25,8 +25,8 @@ type ListOption struct {
 	ContainerCount bool
 }
 
-func (i *image) List(ctx context.Context, opts ...func(opt *ListOption)) (images []entity.Image, err error) {
-	opt := &ListOption{}
+func (i *image) List(ctx context.Context, opts ...func(opt *ListConfig)) (images []entity.Image, err error) {
+	opt := &ListConfig{}
 	for _, o := range opts {
 		o(opt)
 	}

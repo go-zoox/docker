@@ -7,10 +7,10 @@ import (
 	"github.com/docker/docker/api/types/filters"
 )
 
-type PruneOption = filters.Args
+type PruneConfig = filters.Args
 
-func (i *image) Prune(ctx context.Context, opts ...func(opt *PruneOption)) (types.ImagesPruneReport, error) {
-	opt := &PruneOption{}
+func (i *image) Prune(ctx context.Context, opts ...func(opt *PruneConfig)) (types.ImagesPruneReport, error) {
+	opt := &PruneConfig{}
 	for _, o := range opts {
 		o(opt)
 	}

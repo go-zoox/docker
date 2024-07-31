@@ -6,29 +6,35 @@ import (
 	"encoding/json"
 	"io"
 	"os"
-	"time"
 
+	"github.com/docker/cli/cli/streams"
 	dimage "github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/api/types/registry"
 	"github.com/docker/docker/client"
+	"github.com/docker/docker/pkg/jsonmessage"
 )
 
-// PushOption is the configuration for pushing an image
-type PushOption struct {
-	Name string
+// PushConfig is the configuration for pushing an image
+type PushConfig struct {
 	Auth struct {
 		Username string
 		Password string
 		Server   string
 	}
+
+	Stdout io.Writer
 }
 
 // Push pushes an image
-func Push(cfg *PushOption) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Hour)
-	defer cancel()
+func (i *image) Push(ctx context.Context, name string, opts ...func(cfg *PushConfig)) error {
+	cfg := &PushConfig{
+		Stdout: os.Stdout,
+	}
+	for _, o := range opts {
+		o(cfg)
+	}
 
-	auth := ""
+	auth := "no-auth" // @TODO fix: bad parameters and missing X-Registry-Auth: invalid X-Registry-Auth header: EOF
 	if cfg.Auth.Username != "" && cfg.Auth.Password != "" {
 		authConfig := registry.AuthConfig{
 			Username:      cfg.Auth.Username,
@@ -47,13 +53,18 @@ func Push(cfg *PushOption) error {
 		return err
 	}
 
-	reader, err := cli.ImagePush(ctx, cfg.Name, dimage.PushOptions{
+	reader, err := cli.ImagePush(ctx, name, dimage.PushOptions{
+		All:          true,
 		RegistryAuth: auth,
 	})
 	if err != nil {
 		return err
 	}
-	io.Copy(os.Stdout, reader)
+	defer reader.Close()
+
+	if err := jsonmessage.DisplayJSONMessagesToStream(reader, streams.NewOut(cfg.Stdout), nil); err != nil {
+		return err
+	}
 
 	return nil
 }

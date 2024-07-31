@@ -44,7 +44,7 @@ func Build() *cli.Command {
 				return err
 			}
 
-			return client.Image().Build(ctx.Context, src, func(opt *image.BuildOption) {
+			return client.Image().Build(ctx.Context, src, func(opt *image.BuildConfig) {
 				opt.Dockerfile = ctx.String("file")
 				opt.Tags = ctx.StringSlice("tag")
 

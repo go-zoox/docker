@@ -33,7 +33,7 @@ func Remove() *cli.Command {
 				return fmt.Errorf("container id is required")
 			}
 
-			imagesDeleted, err := client.Image().Remove(ctx.Context, imageID, func(opt *image.RemoveOption) {
+			imagesDeleted, err := client.Image().Remove(ctx.Context, imageID, func(opt *image.RemoveConfig) {
 				opt.Force = ctx.Bool("force")
 				opt.PruneChildren = ctx.Bool("no-prune")
 			})

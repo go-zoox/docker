@@ -45,6 +45,7 @@ func main() {
 			image.Remove(),
 			//
 			image.Pull(),
+			image.Push(),
 			//
 			image.Build(),
 			//

@@ -11,16 +11,18 @@ import (
 
 // Image is the docker image client interface
 type Image interface {
-	List(ctx context.Context, opts ...func(opt *ListOption)) (images []entity.Image, err error)
-	Inspect(ctx context.Context, id string, opts ...func(opt *InspectOption)) (*types.ImageInspect, error)
-	Remove(ctx context.Context, id string, opts ...func(opt *RemoveOption)) ([]ti.DeleteResponse, error)
+	List(ctx context.Context, opts ...func(cfg *ListConfig)) (images []entity.Image, err error)
+	Inspect(ctx context.Context, id string, opts ...func(cfg *InspectConfig)) (*types.ImageInspect, error)
+	Remove(ctx context.Context, id string, opts ...func(cfg *RemoveConfig)) ([]ti.DeleteResponse, error)
 	//
-	Build(ctx context.Context, src string, opts ...func(opt *BuildOption)) error
-	Pull(ctx context.Context, name string, opts ...func(opt *PullOption)) error
-	// Push(ctx context.Context, opts ...func(opt *PushOption)) error
+	Build(ctx context.Context, src string, opts ...func(cfg *BuildConfig)) error
+	//
+	Pull(ctx context.Context, name string, opts ...func(cfg *PullConfig)) error
+	Push(ctx context.Context, name string, opts ...func(cfg *PushConfig)) error
+	//
 	Tag(ctx context.Context, source, target string) error
 	//
-	Prune(ctx context.Context, opts ...func(opt *PruneOption)) (types.ImagesPruneReport, error)
+	Prune(ctx context.Context, opts ...func(cfg *PruneConfig)) (types.ImagesPruneReport, error)
 }
 
 type image struct {

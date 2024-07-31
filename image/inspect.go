@@ -6,13 +6,13 @@ import (
 	"github.com/docker/docker/api/types"
 )
 
-type InspectOption struct {
+type InspectConfig struct {
 }
 
-func (i *image) Inspect(ctx context.Context, id string, opts ...func(opt *InspectOption)) (*types.ImageInspect, error) {
-	opt := &InspectOption{}
+func (i *image) Inspect(ctx context.Context, id string, opts ...func(opt *InspectConfig)) (*types.ImageInspect, error) {
+	cfg := &InspectConfig{}
 	for _, o := range opts {
-		o(opt)
+		o(cfg)
 	}
 
 	inspect, _, err := i.client.ImageInspectWithRaw(ctx, id)

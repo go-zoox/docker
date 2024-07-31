@@ -6,13 +6,13 @@ import (
 	ti "github.com/docker/docker/api/types/image"
 )
 
-type RemoveOption struct {
+type RemoveConfig struct {
 	Force         bool
 	PruneChildren bool
 }
 
-func (i *image) Remove(ctx context.Context, id string, opts ...func(opt *RemoveOption)) ([]ti.DeleteResponse, error) {
-	opt := &RemoveOption{}
+func (i *image) Remove(ctx context.Context, id string, opts ...func(opt *RemoveConfig)) ([]ti.DeleteResponse, error) {
+	opt := &RemoveConfig{}
 	for _, o := range opts {
 		o(opt)
 	}

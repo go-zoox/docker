@@ -13,8 +13,8 @@ import (
 	"github.com/docker/docker/pkg/jsonmessage"
 )
 
-// PullOption is the options for pulling an image
-type PullOption struct {
+// PullConfig is the options for pulling an image
+type PullConfig struct {
 	Auth struct {
 		Username string
 		Password string
@@ -25,19 +25,19 @@ type PullOption struct {
 }
 
 // Pull pulls an image
-func (i *image) Pull(ctx context.Context, name string, opts ...func(opt *PullOption)) error {
-	opt := &PullOption{
+func (i *image) Pull(ctx context.Context, name string, opts ...func(opt *PullConfig)) error {
+	cfg := &PullConfig{
 		Stdout: os.Stdout,
 	}
 	for _, o := range opts {
-		o(opt)
+		o(cfg)
 	}
 
 	auth := ""
-	if opt.Auth.Username != "" && opt.Auth.Password != "" {
+	if cfg.Auth.Username != "" && cfg.Auth.Password != "" {
 		authConfig := registry.AuthConfig{
-			Username: opt.Auth.Username,
-			Password: opt.Auth.Password,
+			Username: cfg.Auth.Username,
+			Password: cfg.Auth.Password,
 		}
 		encodedJSON, err := json.Marshal(authConfig)
 		if err != nil {
@@ -48,14 +48,14 @@ func (i *image) Pull(ctx context.Context, name string, opts ...func(opt *PullOpt
 
 	reader, err := i.client.ImagePull(ctx, name, dimage.PullOptions{
 		RegistryAuth: auth,
-		Platform:     opt.Platform,
+		Platform:     cfg.Platform,
 	})
 	if err != nil {
 		return err
 	}
 	defer reader.Close()
 
-	if err := jsonmessage.DisplayJSONMessagesToStream(reader, streams.NewOut(opt.Stdout), nil); err != nil {
+	if err := jsonmessage.DisplayJSONMessagesToStream(reader, streams.NewOut(cfg.Stdout), nil); err != nil {
 		return err
 	}
 

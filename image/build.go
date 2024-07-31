@@ -10,14 +10,14 @@ import (
 	"github.com/docker/docker/pkg/jsonmessage"
 )
 
-// BuildOption is the configuration for building a image
-type BuildOption = types.ImageBuildOptions
+// BuildConfig is the configuration for building a image
+type BuildConfig = types.ImageBuildOptions
 
 // Build builds a image
-func (i *image) Build(ctx context.Context, src string, opts ...func(opt *BuildOption)) error {
-	opt := &BuildOption{}
+func (i *image) Build(ctx context.Context, src string, opts ...func(cfg *BuildConfig)) error {
+	cfg := &BuildConfig{}
 	for _, o := range opts {
-		o(opt)
+		o(cfg)
 	}
 
 	tar, err := archive.TarWithOptions(src, &archive.TarOptions{})
@@ -25,7 +25,7 @@ func (i *image) Build(ctx context.Context, src string, opts ...func(opt *BuildOp
 		return err
 	}
 
-	response, err := i.client.ImageBuild(ctx, tar, *opt)
+	response, err := i.client.ImageBuild(ctx, tar, *cfg)
 	if err != nil {
 		return err
 	}
