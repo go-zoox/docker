@@ -2,8 +2,6 @@ package image
 
 import (
 	"context"
-	"strings"
-	"time"
 
 	"github.com/docker/docker/api/types/filters"
 	dimage "github.com/docker/docker/api/types/image"
@@ -31,39 +29,41 @@ func (i *image) List(ctx context.Context, opts ...func(opt *ListConfig)) (images
 		o(opt)
 	}
 
-	imagesX, err := i.client.ImageList(ctx, dimage.ListOptions{})
-	if err != nil {
-		return nil, err
-	}
+	return i.client.ImageList(ctx, dimage.ListOptions{})
 
-	for _, image := range imagesX {
-		if len(image.RepoTags) == 0 {
-			continue
-		}
+	// imagesX, err := i.client.ImageList(ctx, dimage.ListOptions{})
+	// if err != nil {
+	// 	return nil, err
+	// }
 
-		// if image.RepoTags[0] == "<none>:<none>" {
-		// 	continue
-		// }
+	// for _, image := range imagesX {
+	// 	if len(image.RepoTags) == 0 {
+	// 		continue
+	// 	}
 
-		for _, repoTag := range image.RepoTags {
-			name := ""
-			tags := []string{}
-			if repoTag != "" {
-				tagXs := strings.Split(repoTag, ":")
-				tagLength := len(tagXs)
-				name = strings.Join(tagXs[0:tagLength-1], ":")
-				tags = append(tags, tagXs[tagLength-1])
-			}
+	// 	// if image.RepoTags[0] == "<none>:<none>" {
+	// 	// 	continue
+	// 	// }
 
-			images = append(images, entity.Image{
-				ID:        image.ID[7:],
-				Name:      name,
-				Tags:      tags,
-				Size:      image.Size,
-				CreatedAt: time.UnixMilli(image.Created * 1000),
-			})
-		}
-	}
+	// 	for _, repoTag := range image.RepoTags {
+	// 		name := ""
+	// 		tags := []string{}
+	// 		if repoTag != "" {
+	// 			tagXs := strings.Split(repoTag, ":")
+	// 			tagLength := len(tagXs)
+	// 			name = strings.Join(tagXs[0:tagLength-1], ":")
+	// 			tags = append(tags, tagXs[tagLength-1])
+	// 		}
 
-	return
+	// 		images = append(images, entity.Image{
+	// 			ID:        image.ID[7:],
+	// 			Name:      name,
+	// 			Tags:      tags,
+	// 			Size:      image.Size,
+	// 			CreatedAt: time.UnixMilli(image.Created * 1000),
+	// 		})
+	// 	}
+	// }
+
+	// return
 }

@@ -2,6 +2,7 @@ package image
 
 import (
 	"strings"
+	"time"
 
 	"github.com/docker/go-units"
 	"github.com/go-zoox/cli"
@@ -46,11 +47,23 @@ func List() *cli.Command {
 
 			rows := []map[string]string{}
 			for _, image := range images {
+				name := "<none>"
+				tag := "<none>"
+				if len(image.RepoTags) > 0 {
+					nameAndTag := strings.Split(image.RepoTags[0], ":")
+					if len(nameAndTag) == 1 {
+						name = nameAndTag[0]
+					} else {
+						name = nameAndTag[0]
+						tag = nameAndTag[1]
+					}
+				}
+
 				rows = append(rows, map[string]string{
-					"repository": image.Name,
-					"tag":        strings.Join(image.Tags, ","),
-					"id":         image.ID,
-					"created_at": datetime.FromTime(image.CreatedAt).Ago(),
+					"repository": name,
+					"tag":        tag,
+					"id":         image.ID[7:],
+					"created_at": datetime.FromTime(time.UnixMilli(image.Created * 1000)).Ago(),
 					"size":       units.BytesSize(float64(image.Size)),
 				})
 			}
