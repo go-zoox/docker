@@ -15,6 +15,8 @@ type Image interface {
 	Inspect(ctx context.Context, id string, opts ...func(cfg *InspectConfig)) (*types.ImageInspect, error)
 	Remove(ctx context.Context, id string, opts ...func(cfg *RemoveConfig)) ([]ti.DeleteResponse, error)
 	//
+	History(ctx context.Context, id string) ([]entity.ImageHistory, error)
+	//
 	Build(ctx context.Context, src string, opts ...func(cfg *BuildConfig)) error
 	//
 	Pull(ctx context.Context, name string, opts ...func(cfg *PullConfig)) error

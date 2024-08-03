@@ -13,3 +13,5 @@ import (
 // }
 
 type Image = di.Summary
+
+type ImageHistory = di.HistoryResponseItem
