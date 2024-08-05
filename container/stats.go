@@ -3,7 +3,7 @@ package container
 import (
 	"context"
 
-	"github.com/docker/docker/api/types"
+	dc "github.com/docker/docker/api/types/container"
 )
 
 type StatsOptions struct {
@@ -11,7 +11,7 @@ type StatsOptions struct {
 }
 
 // Status retrieves the status of a container.
-func (c *container) Stats(ctx context.Context, id string, opts ...func(opt *StatsOptions)) (*types.ContainerStats, error) {
+func (c *container) Stats(ctx context.Context, id string, opts ...func(opt *StatsOptions)) (*dc.StatsResponseReader, error) {
 	opt := &StatsOptions{}
 	for _, o := range opts {
 		o(opt)

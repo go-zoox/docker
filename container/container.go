@@ -5,7 +5,7 @@ import (
 	"io"
 
 	"github.com/docker/docker/api/types"
-	co "github.com/docker/docker/api/types/container"
+	dc "github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/client"
 	"github.com/go-zoox/docker/entity"
 )
@@ -14,8 +14,8 @@ import (
 type Container interface {
 	List(ctx context.Context, opts ...func(opt *ListOptions)) ([]entity.Container, error)
 	//
-	Create(ctx context.Context, opts ...func(opt *CreateOptions)) (co.CreateResponse, error)
-	Update(ctx context.Context, id string, opts ...func(opt *UpdateOptions)) (co.ContainerUpdateOKBody, error)
+	Create(ctx context.Context, opts ...func(opt *CreateOptions)) (dc.CreateResponse, error)
+	Update(ctx context.Context, id string, opts ...func(opt *UpdateOptions)) (dc.ContainerUpdateOKBody, error)
 	Remove(ctx context.Context, id string, opts ...func(opt *RemoveOptions)) error
 	//
 	Start(ctx context.Context, id string, opts ...func(opt *StartOptions)) error
@@ -24,11 +24,11 @@ type Container interface {
 	//
 	Inspect(ctx context.Context, id string, opts ...func(opt *InspectOptions)) (*types.ContainerJSON, error)
 	//
-	Stats(ctx context.Context, id string, opts ...func(opt *StatsOptions)) (*types.ContainerStats, error)
+	Stats(ctx context.Context, id string, opts ...func(opt *StatsOptions)) (*dc.StatsResponseReader, error)
 	//
 	Logs(ctx context.Context, id string, opts ...func(opt *LogsConfig)) (io.ReadCloser, error)
 	//
-	Exec(ctx context.Context, id string, opts ...func(opt *ExecOptions)) (io.ReadWriteCloser, error)
+	Exec(ctx context.Context, id string, opts ...func(opt *ExecOptions)) (*ExecTerm, error)
 	//
 	Run(ctx context.Context, opts ...func(opt *RunOptions)) error
 }
