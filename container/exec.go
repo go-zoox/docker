@@ -13,10 +13,8 @@ type ExecOptions struct {
 	Detach bool
 	Tty    bool
 	Cmd    []string
-	// //
-	// Stdin  io.Reader
-	// Stdout io.WriteCloser
-	// Stderr io.WriteCloser
+	//
+	AttachStdin bool
 }
 
 type ExecTerm struct {
@@ -27,16 +25,14 @@ type ExecTerm struct {
 // Exec executes a command inside a container.
 func (c *container) Exec(ctx context.Context, id string, opts ...func(opt *ExecOptions)) (*ExecTerm, error) {
 	opt := &ExecOptions{
-		// Stdin:  os.Stdin,
-		// Stdout: os.Stdout,
-		// Stderr: os.Stderr,
+		AttachStdin: true,
 	}
 	for _, o := range opts {
 		o(opt)
 	}
 
 	response, err := c.client.ContainerExecCreate(ctx, id, dc.ExecOptions{
-		AttachStdin:  true,
+		AttachStdin:  opt.AttachStdin,
 		AttachStdout: true,
 		AttachStderr: true,
 		Tty:          opt.Tty,
