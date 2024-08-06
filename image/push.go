@@ -10,7 +10,6 @@ import (
 	"github.com/docker/cli/cli/streams"
 	dimage "github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/api/types/registry"
-	"github.com/docker/docker/client"
 	"github.com/docker/docker/pkg/jsonmessage"
 )
 
@@ -48,12 +47,7 @@ func (i *image) Push(ctx context.Context, name string, opts ...func(cfg *PushCon
 		auth = base64.URLEncoding.EncodeToString(encodedJSON)
 	}
 
-	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
-	if err != nil {
-		return err
-	}
-
-	reader, err := cli.ImagePush(ctx, name, dimage.PushOptions{
+	reader, err := i.client.ImagePush(ctx, name, dimage.PushOptions{
 		All:          true,
 		RegistryAuth: auth,
 	})
