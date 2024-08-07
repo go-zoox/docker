@@ -24,7 +24,7 @@ type Container interface {
 	//
 	Inspect(ctx context.Context, id string, opts ...func(opt *InspectOptions)) (*types.ContainerJSON, error)
 	//
-	Stats(ctx context.Context, id string, opts ...func(opt *StatsOptions)) (*dc.StatsResponseReader, error)
+	Stats(ctx context.Context, id string, opts ...func(opt *StatsOptions)) (io.ReadCloser, error)
 	//
 	Logs(ctx context.Context, id string, opts ...func(opt *LogsConfig)) (io.ReadCloser, error)
 	//

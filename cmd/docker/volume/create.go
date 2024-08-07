@@ -40,7 +40,8 @@ func Create() *cli.Command {
 				return err
 			}
 
-			response, err := client.Volume().Create(ctx.Context, name, func(opt *volume.CreateOption) {
+			response, err := client.Volume().Create(ctx.Context, func(opt *volume.CreateOption) {
+				opt.Name = name
 				opt.Driver = ctx.String("driver")
 				opt.DriverOpts = map[string]string{}
 				for _, driverOpt := range ctx.StringSlice("driver-opt") {
