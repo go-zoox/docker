@@ -1,6 +1,9 @@
 package docker
 
 import (
+	"context"
+
+	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
 	"github.com/go-zoox/docker/container"
 	"github.com/go-zoox/docker/image"
@@ -10,6 +13,8 @@ import (
 
 // Docker is the client of docker
 type Docker interface {
+	Version(ctx context.Context) (types.Version, error)
+
 	Container() container.Container
 	Image() image.Image
 	Network() network.Network
@@ -52,6 +57,10 @@ func New(opts ...Option) (d Docker, err error) {
 	return &docker{
 		client: c,
 	}, nil
+}
+
+func (d *docker) Version(ctx context.Context) (types.Version, error) {
+	return d.client.ServerVersion(ctx)
 }
 
 func (d *docker) Container() container.Container {
