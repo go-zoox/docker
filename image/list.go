@@ -29,7 +29,12 @@ func (i *image) List(ctx context.Context, opts ...func(opt *ListConfig)) (images
 		o(opt)
 	}
 
-	return i.client.ImageList(ctx, dimage.ListOptions{})
+	return i.client.ImageList(ctx, dimage.ListOptions{
+		All:            opt.All,
+		Filters:        opt.Filters,
+		SharedSize:     opt.SharedSize,
+		ContainerCount: opt.ContainerCount,
+	})
 
 	// imagesX, err := i.client.ImageList(ctx, dimage.ListOptions{})
 	// if err != nil {
