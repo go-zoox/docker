@@ -13,7 +13,7 @@ type Volume interface {
 	List(ctx context.Context, opts ...func(*ListOption)) ([]entity.Volume, error)
 	Inspect(ctx context.Context, id string, opts ...func(*InspectOption)) (vo.Volume, error)
 	//
-	Create(ctx context.Context, name string, opts ...func(*CreateOption)) (vo.Volume, error)
+	Create(ctx context.Context, opts ...func(*CreateOption)) (vo.Volume, error)
 	Remove(ctx context.Context, id string, opts ...func(opt *RemoveOption)) error
 	//
 	Prune(ctx context.Context, opts ...func(opt *PruneOption)) (types.VolumesPruneReport, error)
