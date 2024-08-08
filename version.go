@@ -1,4 +1,4 @@
 package docker
 
 // Version is the version of this package.
-var Version = "1.2.19"
+var Version = "1.2.20"
