@@ -7,25 +7,25 @@
 [![GitHub issues](https://img.shields.io/github/issues/go-zoox/docker.svg)](https://github.com/go-zoox/docker/issues)
 [![Release](https://img.shields.io/github/tag/go-zoox/docker.svg?label=Release)](https://github.com/go-zoox/docker/tags)
 
-A simple and easy-to-use Docker SDK that provides a Go wrapper for Docker API. Supports management operations for containers, images, networks, volumes, and system information.
+一个简洁易用的 Docker SDK，为 Go 语言提供 Docker API 的封装。支持容器、镜像、网络、卷和系统信息的管理操作。
 
-## Features
+## 特性
 
-- 🚀 **Simple API** - Uses functional options pattern with clean and intuitive API design
-- 📦 **Complete Features** - Supports core Docker functionality including containers, images, networks, volumes, and more
-- 🔧 **Flexible Configuration** - Supports both local and remote Docker hosts
-- 🛠️ **CLI Tool** - Built-in command-line tool for quick operations
-- 📚 **Type Safe** - Complete type definitions with excellent IDE support
+- 🚀 **简洁的 API** - 使用函数式选项模式，API 设计简洁直观
+- 📦 **完整功能** - 支持容器、镜像、网络、卷等 Docker 核心功能
+- 🔧 **灵活配置** - 支持本地和远程 Docker 主机
+- 🛠️ **CLI 工具** - 内置命令行工具，方便快速操作
+- 📚 **类型安全** - 完整的类型定义，提供良好的 IDE 支持
 
-## Installation
+## 安装
 
 ```bash
 go get -u github.com/go-zoox/docker
 ```
 
-## Quick Start
+## 快速开始
 
-### Create Client
+### 创建客户端
 
 ```go
 package main
@@ -37,13 +37,13 @@ import (
 )
 
 func main() {
-    // Use default configuration (reads from environment variables)
+    // 使用默认配置（从环境变量读取）
     client, err := docker.New()
     if err != nil {
         panic(err)
     }
 
-    // Or specify Docker server address
+    // 或者指定 Docker 服务器地址
     client, err = docker.New(func(cfg *docker.Config) {
         cfg.Server = "tcp://localhost:2375"
     })
@@ -51,17 +51,17 @@ func main() {
         panic(err)
     }
 
-    // Use the client...
+    // 使用客户端...
 }
 ```
 
-## API Documentation
+## API 文档
 
-### Container Management
+### 容器管理 (Container)
 
-Container management provides complete container lifecycle operations.
+容器管理提供了完整的容器生命周期操作。
 
-#### List Containers
+#### 列出容器
 
 ```go
 containers, err := client.Container().List(ctx)
@@ -75,7 +75,7 @@ for _, container := range containers {
 }
 ```
 
-#### Create Container
+#### 创建容器
 
 ```go
 import (
@@ -91,22 +91,22 @@ response, err := client.Container().Create(ctx, func(opt *container.CreateOption
 })
 ```
 
-#### Start/Stop/Restart Container
+#### 启动/停止/重启容器
 
 ```go
-// Start container
+// 启动容器
 err := client.Container().Start(ctx, "container-id")
 
-// Stop container
+// 停止容器
 err := client.Container().Stop(ctx, "container-id", func(opt *container.StopOptions) {
     opt.Timeout = 30 * time.Second
 })
 
-// Restart container
+// 重启容器
 err := client.Container().Restart(ctx, "container-id")
 ```
 
-#### View Container Logs
+#### 查看容器日志
 
 ```go
 logs, err := client.Container().Logs(ctx, "container-id", func(opt *container.LogsConfig) {
@@ -123,7 +123,7 @@ defer logs.Close()
 io.Copy(os.Stdout, logs)
 ```
 
-#### Execute Container Command
+#### 执行容器命令
 
 ```go
 term, err := client.Container().Exec(ctx, "container-id", func(opt *container.ExecOptions) {
@@ -138,7 +138,7 @@ defer term.Close()
 io.Copy(os.Stdout, term)
 ```
 
-#### View Container Statistics
+#### 查看容器统计信息
 
 ```go
 stats, err := client.Container().Stats(ctx, "container-id")
@@ -147,25 +147,25 @@ if err != nil {
 }
 defer stats.Close()
 
-// Read statistics stream
+// 读取统计信息流
 io.Copy(os.Stdout, stats)
 ```
 
-#### Run Container (Create and Start)
+#### 运行容器（创建并启动）
 
 ```go
 err := client.Container().Run(ctx, func(opt *container.RunOptions) {
     opt.Image = "nginx:latest"
     opt.Name = "my-nginx"
-    opt.Remove = true // Auto-remove on exit
+    opt.Remove = true // 退出时自动删除
 })
 ```
 
-### Image Management
+### 镜像管理 (Image)
 
-Image management provides operations for building, pulling, and pushing images.
+镜像管理提供了镜像的构建、拉取、推送等操作。
 
-#### List Images
+#### 列出镜像
 
 ```go
 images, err := client.Image().List(ctx)
@@ -179,7 +179,7 @@ for _, image := range images {
 }
 ```
 
-#### Pull Image
+#### 拉取镜像
 
 ```go
 err := client.Image().Pull(ctx, "nginx:latest", func(cfg *image.PullConfig) {
@@ -187,7 +187,7 @@ err := client.Image().Pull(ctx, "nginx:latest", func(cfg *image.PullConfig) {
 })
 ```
 
-#### Push Image
+#### 推送镜像
 
 ```go
 err := client.Image().Push(ctx, "my-registry/nginx:latest", func(cfg *image.PushConfig) {
@@ -195,7 +195,7 @@ err := client.Image().Push(ctx, "my-registry/nginx:latest", func(cfg *image.Push
 })
 ```
 
-#### Build Image
+#### 构建镜像
 
 ```go
 err := client.Image().Build(ctx, "./dockerfile-dir", func(cfg *image.BuildConfig) {
@@ -204,7 +204,7 @@ err := client.Image().Build(ctx, "./dockerfile-dir", func(cfg *image.BuildConfig
 })
 ```
 
-#### Remove Image
+#### 删除镜像
 
 ```go
 results, err := client.Image().Remove(ctx, "image-id", func(cfg *image.RemoveConfig) {
@@ -213,7 +213,7 @@ results, err := client.Image().Remove(ctx, "image-id", func(cfg *image.RemoveCon
 })
 ```
 
-#### Prune Unused Images
+#### 清理未使用的镜像
 
 ```go
 import "github.com/docker/docker/api/types/filters"
@@ -226,11 +226,11 @@ fmt.Printf("Deleted: %d, Space Reclaimed: %d\n",
     len(report.ImagesDeleted), report.SpaceReclaimed)
 ```
 
-### Network Management
+### 网络管理 (Network)
 
-Network management provides Docker network creation, deletion, and querying functionality.
+网络管理提供了 Docker 网络的创建、删除和查询功能。
 
-#### List Networks
+#### 列出网络
 
 ```go
 networks, err := client.Network().List(ctx)
@@ -244,7 +244,7 @@ for _, network := range networks {
 }
 ```
 
-#### Create Network
+#### 创建网络
 
 ```go
 import (
@@ -262,24 +262,24 @@ response, err := client.Network().Create(ctx, "my-network", func(opt *network.Cr
 })
 ```
 
-#### Remove Network
+#### 删除网络
 
 ```go
 err := client.Network().Remove(ctx, "network-id")
 ```
 
-#### Prune Unused Networks
+#### 清理未使用的网络
 
 ```go
 report, err := client.Network().Prune(ctx)
 fmt.Printf("Deleted: %d\n", len(report.NetworksDeleted))
 ```
 
-### Volume Management
+### 卷管理 (Volume)
 
-Volume management provides Docker volume creation, deletion, and querying functionality.
+卷管理提供了 Docker 数据卷的创建、删除和查询功能。
 
-#### List Volumes
+#### 列出卷
 
 ```go
 volumes, err := client.Volume().List(ctx)
@@ -293,7 +293,7 @@ for _, volume := range volumes {
 }
 ```
 
-#### Create Volume
+#### 创建卷
 
 ```go
 import (
@@ -310,7 +310,7 @@ vol, err := client.Volume().Create(ctx, func(opt *volume.CreateOption) {
 })
 ```
 
-#### Remove Volume
+#### 删除卷
 
 ```go
 err := client.Volume().Remove(ctx, "volume-name", func(opt *volume.RemoveOption) {
@@ -318,7 +318,7 @@ err := client.Volume().Remove(ctx, "volume-name", func(opt *volume.RemoveOption)
 })
 ```
 
-#### Prune Unused Volumes
+#### 清理未使用的卷
 
 ```go
 import "github.com/docker/docker/api/types/filters"
@@ -331,11 +331,11 @@ fmt.Printf("Deleted: %d, Space Reclaimed: %d\n",
     len(report.VolumesDeleted), report.SpaceReclaimed)
 ```
 
-### System Information
+### 系统信息 (Info)
 
-System information provides Docker system-related querying functionality.
+系统信息提供了 Docker 系统相关的查询功能。
 
-#### Get System Info
+#### 获取系统信息
 
 ```go
 info, err := client.Info().Get(ctx)
@@ -348,7 +348,7 @@ fmt.Printf("Containers: %d, Images: %d\n",
 fmt.Printf("Server Version: %s\n", info.ServerVersion)
 ```
 
-#### Get Version Info
+#### 获取版本信息
 
 ```go
 version, err := client.Info().Version(ctx)
@@ -360,7 +360,7 @@ fmt.Printf("API Version: %s\n", version.APIVersion)
 fmt.Printf("Go Version: %s\n", version.GoVersion)
 ```
 
-#### Get Disk Usage
+#### 获取磁盘使用情况
 
 ```go
 diskUsage, err := client.Info().Disk(ctx)
@@ -373,48 +373,48 @@ fmt.Printf("Containers Size: %d\n", diskUsage.ContainersSize)
 fmt.Printf("Volumes Size: %d\n", diskUsage.VolumesSize)
 ```
 
-## CLI Tool
+## CLI 工具
 
-The project also provides a command-line tool for quick Docker operations.
+项目还提供了一个命令行工具，方便快速操作 Docker。
 
-### Install CLI
+### 安装 CLI
 
 ```bash
 go install github.com/go-zoox/docker/cmd/docker@latest
 ```
 
-### Usage Examples
+### 使用示例
 
 ```bash
-# List containers
+# 列出容器
 docker container list
 
-# View container logs
+# 查看容器日志
 docker container logs <container-id>
 
-# Execute container command
+# 执行容器命令
 docker container exec <container-id> ls -la
 
-# List images
+# 列出镜像
 docker image list
 
-# Pull image
+# 拉取镜像
 docker image pull nginx:latest
 
-# List networks
+# 列出网络
 docker network list
 
-# Create network
+# 创建网络
 docker network create my-network
 
-# List volumes
+# 列出卷
 docker volume list
 
-# Create volume
+# 创建卷
 docker volume create my-volume
 ```
 
-## Complete Example
+## 完整示例
 
 ```go
 package main
@@ -423,6 +423,7 @@ import (
     "context"
     "fmt"
     "log"
+    "time"
 
     "github.com/go-zoox/docker"
     "github.com/go-zoox/docker/container"
@@ -431,13 +432,13 @@ import (
 func main() {
     ctx := context.Background()
 
-    // Create client
+    // 创建客户端
     client, err := docker.New()
     if err != nil {
         log.Fatal(err)
     }
 
-    // Create and run container
+    // 创建并运行容器
     err = client.Container().Run(ctx, func(opt *container.RunOptions) {
         opt.Image = "nginx:latest"
         opt.Name = "test-nginx"
@@ -447,7 +448,7 @@ func main() {
         log.Fatal(err)
     }
 
-    // List all containers
+    // 列出所有容器
     containers, err := client.Container().List(ctx)
     if err != nil {
         log.Fatal(err)
@@ -458,7 +459,7 @@ func main() {
         fmt.Printf("- %s: %s\n", c.Names[0], c.Status)
     }
 
-    // Get system information
+    // 获取系统信息
     info, err := client.Info().Get(ctx)
     if err != nil {
         log.Fatal(err)
@@ -471,6 +472,6 @@ func main() {
 }
 ```
 
-## License
+## 许可证
 
 GoZoox is released under the [MIT License](./LICENSE).
